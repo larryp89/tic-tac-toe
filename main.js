@@ -1,97 +1,112 @@
 const gameBoard = (function () {
-  // Properly initialize a 3x3 game board with null values or any placeholder you prefer
-  const board = [
-    ["X", "O", "X"],
-    ["O", "O", "X"],
-    ["O", "X", "O"],
-  ];
+  const board = ["", "", "", "", "", "", "", "", ""];
 
-  const printBoard = () => console.log(board);
-  const resetBoard = function () {
-    for (let i = 0; i < board.length; i++) {
-      for (let j = 0; j < board.length; j++) {
-        board[i][j] = "";
-      }
+  const printBoard = () => board;
+
+  const updateBoard = function (move, player) {
+    if (board[move] === "") {
+      board[move] = player.symbol;
+      return true;
     }
+    return false;
   };
 
-  const placeMarker = function (move) {
-    //
-  };
   const checkWinner = function () {
-    const winPatterns = [
-      // Rows
-      [
-        [0, 0],
-        [0, 1],
-        [0, 2],
-      ],
-      [
-        [1, 0],
-        [1, 1],
-        [1, 2],
-      ],
-      [
-        [2, 0],
-        [2, 1],
-        [2, 2],
-      ],
-      // Columns
-      [
-        [0, 0],
-        [1, 0],
-        [2, 0],
-      ],
-      [
-        [0, 1],
-        [1, 1],
-        [2, 1],
-      ],
-      [
-        [0, 2],
-        [1, 2],
-        [2, 2],
-      ],
-      // Diagonals
-      [
-        [0, 0],
-        [1, 1],
-        [2, 2],
-      ],
-      [
-        [0, 2],
-        [1, 1],
-        [2, 0],
-      ],
-    ];
-
-    for (let pattern of winPatterns) {
-      // destructure pattern to a,b,c
-      const [a, b, c] = pattern;
-      if (
-        // if the first place is not blank, and
-        board[a[0]][a[1]] &&
-        board[a[0]][a[1]] === board[b[0]][b[1]] &&
-        board[a[0]][a[1]] === board[c[0]][c[1]]
-      ) {
-        return `Game over. ${board[a[0]][a[1]]} wins!`;
-      }
-    }
-
-    // Check for a tie
     if (
-      board.every(function (row) {
-        return row.every(function (cell) {
-          return cell !== "";
-        });
-      })
-    ) {
-      return "Game over. It's a tie!";
-    }
+      // check rows
+      (board[0] === "X" && board[1] === "X" && board[2] === "X") ||
+      (board[0] === "O" && board[1] === "O" && board[2] === "O") ||
+      (board[3] === "X" && board[4] === "X" && board[5] === "X") ||
+      (board[3] === "O" && board[4] === "O" && board[5] === "O") ||
+      (board[6] === "X" && board[7] === "X" && board[8] === "X") ||
+      (board[6] === "O" && board[7] === "O" && board[8] === "O") ||
+      // check columns
 
-    return null; // Game is still ongoing
+      (board[0] === "X" && board[3] === "X" && board[6] === "X") ||
+      (board[0] === "O" && board[3] === "O" && board[6] === "O") ||
+      (board[1] === "X" && board[4] === "X" && board[7] === "X") ||
+      (board[1] === "O" && board[4] === "O" && board[7] === "O") ||
+      (board[2] === "X" && board[5] === "X" && board[8] === "X") ||
+      (board[2] === "O" && board[5] === "O" && board[8] === "O") ||
+      // check diagnoals
+      (board[0] === "X" && board[4] === "X" && board[8] === "X") ||
+      (board[0] === "O" && board[4] === "O" && board[8] === "O") ||
+      (board[2] === "X" && board[4] === "X" && board[6] === "X") ||
+      (board[2] === "O" && board[4] === "O" && board[6] === "O")
+    ) {
+      return "Game over";
+    }
   };
-  return { printBoard, resetBoard, checkWinner, placeMarker };
+
+  const resetBoard = function () {
+    board = ["", "", "", "", "", "", "", "", ""];
+  };
+
+  return { updateBoard, checkWinner, resetBoard, printBoard };
 })();
 
+const player = function (name, symbol) {
+  return { name, symbol };
+};
 
+const gameFlow = (function () {
+  let player1 = player("Lonce", "X");
+  let player2 = player("Lown", "O");
+  let gameON = true;
+  let currentPlayer = player1;
+
+  const switchPlayers = function () {
+    currentPlayer = currentPlayer === player1 ? player2 : player1;
+  };
+
+  const playGame = function () {
+    // start game button clicked
+    while (gameON) {
+      UI_manager.bindCellEvents(currentPlayer.symbol);
+      const playerChoice = prompt("Choose a square");
+      if (playerChoice === "q") {
+        break;
+      }
+      if (gameBoard.updateBoard(playerChoice, currentPlayer)) {
+        UI_manager.updateUI(currentPlayer);
+        if (gameBoard.checkWinner()) {
+          gameON = false;
+          return `Game over! ${currentPlayer} wins!`;
+        }
+      }
+      switchPlayers();
+      console.log(gameBoard.printBoard());
+    }
+  };
+
+  return { switchPlayers, playGame };
+})();
+
+const UI_manager = (function () {
+  // add cell event listener
+  const bindCellEvents = function (player) {
+    allCells = document.querySelectorAll(".cell");
+    for (let cell of allCells) {
+      cell.addEventListener("click", function () {
+        updateUI(cell, player);
+      });
+    }
+  };
+
+  const updateUI = function (div, player) {
+    div.textContent = player;
+  };
+  return { bindCellEvents, updateUI };
+})();
+gameFlow.playGame();
+
+// // On screen
+// // Input player 1 name
+// // Input player 2 name
+// // click start game button which brings up empty grid and starts game flow
+
+// // While the game is running
+// // On click of button:
+// // If cell is empty,  place the marker of the player
+// // checks for winner
+// // changes turn
