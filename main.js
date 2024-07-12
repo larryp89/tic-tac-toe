@@ -55,6 +55,8 @@ const gameFlow = (function () {
   let gameON = true;
   let currentPlayer = player1;
 
+  const getCurrentPlayer = () => currentPlayer;
+
   const switchPlayers = function () {
     currentPlayer = currentPlayer === player1 ? player2 : player1;
   };
@@ -62,7 +64,7 @@ const gameFlow = (function () {
   const playGame = function () {
     // start game button clicked
     while (gameON) {
-      UI_manager.bindCellEvents(currentPlayer.symbol);
+      UI_manager.bindCellEvents();
       const playerChoice = prompt("Choose a square");
       if (playerChoice === "q") {
         break;
@@ -79,34 +81,43 @@ const gameFlow = (function () {
     }
   };
 
-  return { switchPlayers, playGame };
+  return { switchPlayers, playGame, getCurrentPlayer };
 })();
 
 const UI_manager = (function () {
-  // add cell event listener
-  const bindCellEvents = function (player) {
+  // add cell event listeners
+  const bindCellEvents = function () {
     allCells = document.querySelectorAll(".cell");
     for (let cell of allCells) {
       cell.addEventListener("click", function () {
         updateUI(cell, player);
+        getDivIndex(cell);
       });
     }
   };
 
-  const updateUI = function (div, player) {
-    div.textContent = player;
+  const updateUI = function (div) {
+    const player = gameFlow.getCurrentPlayer();
+    div.textContent = player.symbol;
   };
+
+  const getDivIndex = function (cell) {
+    const cellIndex = cell.getAttribute("data-index");
+    console.log(cellIndex);
+  };
+
   return { bindCellEvents, updateUI };
 })();
 gameFlow.playGame();
 
-// // On screen
-// // Input player 1 name
-// // Input player 2 name
-// // click start game button which brings up empty grid and starts game flow
+// On screen
+// Input player 1 name
+// Input player 2 name
+// click start game button which brings up empty grid and starts game flow
 
-// // While the game is running
-// // On click of button:
-// // If cell is empty,  place the marker of the player
-// // checks for winner
-// // changes turn
+// While the game is running
+// On click of button:
+// If cell is empty,  place the marker of the player
+// update the board array
+// checks for winner
+// changes turn
