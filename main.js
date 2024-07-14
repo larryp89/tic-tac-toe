@@ -34,15 +34,19 @@ const gameBoard = (function () {
       (board[2] === "X" && board[4] === "X" && board[6] === "X") ||
       (board[2] === "O" && board[4] === "O" && board[6] === "O")
     ) {
-      return "Game over";
+      return true;
     }
+  };
+
+  const isDraw = function () {
+    return board.every((cell) => cell !== "");
   };
 
   const resetBoard = function () {
     board = ["", "", "", "", "", "", "", "", ""];
   };
 
-  return { updateBoard, checkWinner, resetBoard, printBoard };
+  return { updateBoard, checkWinner, resetBoard, printBoard, isDraw };
 })();
 
 const player = function (name, symbol) {
@@ -61,27 +65,28 @@ const gameFlow = (function () {
     currentPlayer = currentPlayer === player1 ? player2 : player1;
   };
 
-  const playGame = function () {
-    // start game button clicked
-    while (gameON) {
-      UI_manager.bindCellEvents();
-      const playerChoice = prompt("Choose a square");
-      if (playerChoice === "q") {
-        break;
-      }
-      if (gameBoard.updateBoard(playerChoice, currentPlayer)) {
-        UI_manager.updateUI(currentPlayer);
+  const handleMove = function (cellIndex) {
+    if (gameON) {
+      // check current move can be played
+      if (gameBoard.updateBoard(cellIndex, currentPlayer)) {
+        // check if there's a winner
         if (gameBoard.checkWinner()) {
+          console.log("There's a winner");
           gameON = false;
-          return `Game over! ${currentPlayer} wins!`;
+        }
+        // add check for draw
+        else if (gameBoard.isDraw()) {
+          console.log("It's a draw");
+          gameON = false;
+        } else {
+          switchPlayers();
+          // UI_manager.updateTurnIndicator(currentPlayer);
         }
       }
-      switchPlayers();
-      console.log(gameBoard.printBoard());
     }
   };
 
-  return { switchPlayers, playGame, getCurrentPlayer };
+  return { switchPlayers, getCurrentPlayer, handleMove, getCurrentPlayer };
 })();
 
 const UI_manager = (function () {
@@ -90,8 +95,9 @@ const UI_manager = (function () {
     allCells = document.querySelectorAll(".cell");
     for (let cell of allCells) {
       cell.addEventListener("click", function () {
-        updateUI(cell, player);
-        getDivIndex(cell);
+        updateUI(cell);
+        const index = getDivIndex(cell);
+        gameFlow.handleMove(index);
       });
     }
   };
@@ -103,13 +109,13 @@ const UI_manager = (function () {
 
   const getDivIndex = function (cell) {
     const cellIndex = cell.getAttribute("data-index");
-    console.log(cellIndex);
+    return cellIndex;
   };
 
-  return { bindCellEvents, updateUI };
+  return { bindCellEvents, updateUI, getDivIndex };
 })();
-gameFlow.playGame();
 
+UI_manager.bindCellEvents();
 // On screen
 // Input player 1 name
 // Input player 2 name
@@ -117,6 +123,7 @@ gameFlow.playGame();
 
 // While the game is running
 // On click of button:
+// do the  the game logic:
 // If cell is empty,  place the marker of the player
 // update the board array
 // checks for winner
