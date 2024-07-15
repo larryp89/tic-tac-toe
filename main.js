@@ -66,6 +66,7 @@ const gameFlow = (function () {
     gameON = true;
     gameBoard.resetBoard();
     UI_manager.resetBoard();
+    UI_manager.updateNames(player1.name, player2.name);
   };
 
   const playAgain = function () {
@@ -93,12 +94,15 @@ const gameFlow = (function () {
       if (gameBoard.checkWinner()) {
         console.log(`${currentPlayer.name} wins!`);
         updateScore(currentPlayer);
+        UI_manager.updateScore(currentPlayer)
         gameON = false;
         UI_manager.togglePlaybutton();
+        switchPlayers()
       } else if (gameBoard.isDraw()) {
         console.log("It's a draw");
         gameON = false;
         UI_manager.togglePlaybutton();
+        switchPlayers()
       } else {
         switchPlayers();
         // UI_manager.updateTurnIndicator(currentPlayer);
@@ -194,6 +198,23 @@ const UI_manager = (function () {
     }
   };
 
+  const updateNames = function (player1, player2) {
+    const p1Name = document.querySelector(".p1-name");
+    const p2Name = document.querySelector(".p2-name");
+    p1Name.textContent = `${player1}:`;
+    p2Name.textContent = `${player2}`;
+  };
+
+  const updateScore = function (player) {
+    const p1Score = document.querySelector(".p1-score");
+    const p2Score = document.querySelector(".p2-score");
+    if (player.symbol === "X") {
+      p1Score.textContent = player.score;
+    } else {
+      p2Score.textContent = player.score;
+    }
+  };
+
   return {
     bindCellEvents,
     updateUI: updateCell,
@@ -202,6 +223,8 @@ const UI_manager = (function () {
     getPlayerDetails,
     resetBoard,
     togglePlaybutton,
+    updateNames,
+    updateScore,
   };
 })();
 

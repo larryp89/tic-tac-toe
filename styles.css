@@ -1,11 +1,20 @@
+*{
+  font-family:fantasy;
+  letter-spacing: 0.3cap;
+}
+
 .main-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 100px;
+  justify-content: center;
+  margin: 100px 300px;
+  background-color: teal;
+  border-radius: 10px;
 }
 
 .header {
+
 }
 
 .main-board {
@@ -13,10 +22,49 @@
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr 1fr;
+  background: white;
 }
+
 
 .cell {
   border: 1px solid black;
   width: 100px;
   height: 100px;
+  font-size: 80px;
+  text-align: center;
+  background-color: teal;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white
+}
+
+.new-game {
+  width: 8rem;
+  height: 2rem;
+  background-color: rgb(72, 157, 157);
+  opacity: 0.8;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.new-game:hover {
+  background-color: white;
+  cursor: pointer;
+}
+
+.scoreboard{
+  display: flex;
+  border-radius: 8px;
+  }
+
+.p1-card, .p2-card{
+  display: flex;
+  margin: 20px;
+}
+
+.p1-name, .p2-name{
+  margin-right: 5px;
+  color: white;
+  font-weight: lighter;
 }
