@@ -36,7 +36,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white
+  color: white;
+  letter-spacing: 0;
 }
 
 .new-game {
@@ -64,7 +65,12 @@
 }
 
 .p1-name, .p2-name{
+  font-size: 20px;
   margin-right: 5px;
   color: white;
   font-weight: lighter;
+}
+
+.p1-score, .p2-score{
+  font-size: 20px;
 }
