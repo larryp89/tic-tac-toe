@@ -1,5 +1,5 @@
 const gameBoard = (function () {
-  const board = ["", "", "", "", "", "", "", "", ""];
+  let board = ["", "", "", "", "", "", "", "", ""];
 
   const printBoard = () => board;
 
@@ -49,15 +49,36 @@ const gameBoard = (function () {
   return { updateBoard, checkWinner, resetBoard, printBoard, isDraw };
 })();
 
-const player = function (name, symbol) {
-  return { name, symbol };
+const player = function (name, symbol, score) {
+  return { name, symbol, score };
 };
 
 const gameFlow = (function () {
-  let player1 = player("Lonce", "X");
-  let player2 = player("Lown", "O");
+  let player1;
+  let player2;
   let gameON = true;
   let currentPlayer = player1;
+
+  const gameInit = function (player1Name, player2Name) {
+    player1 = player(player1Name, "X", 0);
+    player2 = player(player2Name, "O", 0);
+    currentPlayer = player1;
+    gameON = true;
+    gameBoard.resetBoard();
+    UI_manager.resetBoard();
+  };
+
+  const playAgain = function () {
+    gameON = true;
+    gameBoard.resetBoard();
+    UI_manager.resetBoard();
+  };
+
+  const updateScore = function (player) {
+    player.score++;
+  };
+
+  const isGameON = () => gameON;
 
   const getCurrentPlayer = () => currentPlayer;
 
@@ -66,45 +87,87 @@ const gameFlow = (function () {
   };
 
   const handleMove = function (cellIndex) {
-    if (gameON) {
-      // check current move can be played
-      if (gameBoard.updateBoard(cellIndex, currentPlayer)) {
-        // check if there's a winner
-        if (gameBoard.checkWinner()) {
-          console.log("There's a winner");
-          gameON = false;
-        }
-        // add check for draw
-        else if (gameBoard.isDraw()) {
-          console.log("It's a draw");
-          gameON = false;
-        } else {
-          switchPlayers();
-          // UI_manager.updateTurnIndicator(currentPlayer);
-        }
+    // check it's a valid move
+    if (gameBoard.updateBoard(cellIndex, currentPlayer)) {
+      // check if there's a winner
+      if (gameBoard.checkWinner()) {
+        console.log(`${currentPlayer.name} wins!`);
+        updateScore(currentPlayer);
+        gameON = false;
+        UI_manager.togglePlaybutton();
+      } else if (gameBoard.isDraw()) {
+        console.log("It's a draw");
+        gameON = false;
+        UI_manager.togglePlaybutton();
+      } else {
+        switchPlayers();
+        // UI_manager.updateTurnIndicator(currentPlayer);
       }
     }
   };
 
-  return { switchPlayers, getCurrentPlayer, handleMove, getCurrentPlayer };
+  return {
+    switchPlayers,
+    getCurrentPlayer,
+    handleMove,
+    gameInit,
+    isGameON,
+    playAgain,
+  };
 })();
 
 const UI_manager = (function () {
   // add cell event listeners
+  const allCells = document.querySelectorAll(".cell");
   const bindCellEvents = function () {
-    allCells = document.querySelectorAll(".cell");
     for (let cell of allCells) {
       cell.addEventListener("click", function () {
-        updateUI(cell);
-        const index = getDivIndex(cell);
-        gameFlow.handleMove(index);
+        if (gameFlow.isGameON()) {
+          updateCell(cell);
+          const index = getDivIndex(cell);
+          gameFlow.handleMove(index);
+        }
       });
     }
   };
 
-  const updateUI = function (div) {
+  // add play button event listener
+  const playButton = document.querySelector(".new-game");
+  playButton.addEventListener("click", function () {
+    if (gameFlow.isGameON()) {
+      getPlayerDetails();
+      togglePlaybutton();
+    }
+    if (!gameFlow.isGameON()) {
+      gameFlow.playAgain();
+      togglePlaybutton();
+    }
+  });
+
+  const getPlayerDetails = function () {
+    const dialog = document.getElementById("playerDetailsDialog");
+    dialog.showModal();
+
+    dialog.querySelector("form").addEventListener("submit", function (event) {
+      event.preventDefault();
+      let player1Name = dialog.querySelector("#player1").value;
+      if (player1Name == "") {
+        player1Name = "Player 1";
+      }
+      let player2Name = dialog.querySelector("#player2").value;
+      if (player2Name == "") {
+        player2Name = "Player 2";
+      }
+      dialog.close();
+      gameFlow.gameInit(player1Name, player2Name);
+    });
+  };
+
+  const updateCell = function (div) {
     const player = gameFlow.getCurrentPlayer();
-    div.textContent = player.symbol;
+    if (div.textContent === "") {
+      div.textContent = player.symbol;
+    }
   };
 
   const getDivIndex = function (cell) {
@@ -112,10 +175,38 @@ const UI_manager = (function () {
     return cellIndex;
   };
 
-  return { bindCellEvents, updateUI, getDivIndex };
+  const showPlayerForm = function () {
+    playButton = document.querySelector(".new-game");
+    playButton.addEventListener("click", function () {
+      dialog = document.querySelector("dialog");
+      dialog.showModal();
+    });
+  };
+
+  const togglePlaybutton = function () {
+    playButton.textContent = "Play again";
+    playButton.disabled = playButton.disabled === true ? false : true;
+  };
+
+  const resetBoard = function () {
+    for (let cell of allCells) {
+      cell.textContent = "";
+    }
+  };
+
+  return {
+    bindCellEvents,
+    updateUI: updateCell,
+    getDivIndex,
+    showPlayerForm,
+    getPlayerDetails,
+    resetBoard,
+    togglePlaybutton,
+  };
 })();
 
 UI_manager.bindCellEvents();
+
 // On screen
 // Input player 1 name
 // Input player 2 name
